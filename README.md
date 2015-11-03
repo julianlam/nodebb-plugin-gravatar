@@ -1,5 +1,3 @@
-# Catatar
+# Gravatar
 
-Exposes an avatar involving a cat to every NodeBB user.
-
-Cat images courtesy of http://thecatapi.com/
+Allows users to use their Gravatar on your forum

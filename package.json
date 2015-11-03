@@ -1,15 +1,16 @@
 {
-  "name": "nodebb-plugin-catatar",
-  "version": "1.0.0",
-  "description": "Exposes a cat-like avatar for every user",
+  "name": "nodebb-plugin-gravatar",
+  "version": "0.0.0",
+  "description": "Allows users to use their Gravatar on your forum",
   "main": "library.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/julianlam/nodebb-plugin-catatar"
+    "url": "https://github.com/julianlam/nodebb-plugin-gravatar"
   },
   "keywords": [
     "nodebb",
-    "plugin"
+    "plugin",
+    "gravatar"
   ],
   "author": {
     "name": "Julian Lam",
@@ -17,7 +18,7 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/julianlam/nodebb-plugin-catatar/issues"
+    "url": "https://github.com/julianlam/nodebb-plugin-gravatar/issues"
   },
   "readmeFilename": "README.md",
   "nbbpm": {

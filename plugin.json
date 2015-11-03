@@ -1,6 +1,6 @@
 {
-	"id": "nodebb-plugin-catatar",
-	"url": "https://github.com/NodeBB/nodebb-plugin-catatar",
+	"id": "nodebb-plugin-gravatar",
+	"url": "https://github.com/NodeBB/nodebb-plugin-gravatar",
 	"library": "./library.js",
 	"hooks": [
 		{ "hook": "filter:user.listPictures", "method": "list" },

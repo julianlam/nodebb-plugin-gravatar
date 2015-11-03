@@ -1,31 +1,23 @@
 "use strict";
 
-var controllers = require('./lib/controllers'),
+var plugin = {};
 
-	plugin = {};
-
-plugin.init = function(params, callback) {
-	var router = params.router,
-		hostMiddleware = params.middleware,
-		hostControllers = params.controllers;
-		
-	// We create two routes for every view. One API call, and the actual route itself.
-	// Just add the buildHeader middleware to your route and NodeBB will take care of everything for you.
-
-	router.get('/admin/plugins/quickstart', hostMiddleware.admin.buildHeader, controllers.renderAdminPage);
-	router.get('/api/admin/plugins/quickstart', controllers.renderAdminPage);
-
-	callback();
-};
-
-plugin.addAdminNavigation = function(header, callback) {
-	header.plugins.push({
-		route: '/plugins/quickstart',
-		icon: 'fa-tint',
-		name: 'Quickstart'
+plugin.list = function(data, callback) {
+	data.pictures.push({
+		type: 'catatar',
+		url: 'http://thecatapi.com/api/images/get?format=src&type=gif',
+		text: 'Random Cat Picture'
 	});
 
-	callback(null, header);
+	callback(null, data);
+};
+
+plugin.get = function(data, callback) {
+	if (data.type === 'catatar') {
+		data.picture = 'http://thecatapi.com/api/images/get?format=src&type=gif';
+	}
+
+	callback(null, data);
 };
 
 module.exports = plugin;

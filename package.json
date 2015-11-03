@@ -1,11 +1,11 @@
 {
-  "name": "nodebb-plugin-quickstart",
+  "name": "nodebb-plugin-catatar",
   "version": "0.0.0",
-  "description": "",
+  "description": "Exposes a cat-like avatar for every user",
   "main": "library.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/julianlam/nodebb-plugin-quickstart"
+    "url": "https://github.com/julianlam/nodebb-plugin-catatar"
   },
   "keywords": [
     "nodebb",
@@ -17,10 +17,10 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/julianlam/nodebb-plugin-quickstart/issues"
+    "url": "https://github.com/julianlam/nodebb-plugin-catatar/issues"
   },
   "readmeFilename": "README.md",
   "nbbpm": {
-    "compatibility": "^0.6.0 || ^0.7.0 || ^0.8.0"
+    "compatibility": "^0.9.0"
   }
 }

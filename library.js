@@ -2,7 +2,9 @@
 
 var user = module.parent.require('./user'),
 	meta = module.parent.require('./meta'),
+	db = module.parent.require('./database'),
 	winston = module.parent.require('winston'),
+	async = module.parent.require('async'),
 	crypto = require('crypto'),
 
 	controllers = require('./lib/controllers'),
@@ -78,16 +80,17 @@ plugin.updateUser = function(data, callback) {
 
 plugin.onForceEnabled = function(users, callback) {
 	if (plugin.settings.force === 'on') {
-		users = users.map(function(user) {
-			if (user.hasOwnProperty('picture')) {
-				winston.verbose('[plugin/gravatar] Forcing use of Gravatar (uid: ' + user.uid + ')');
-				user.picture = getGravatarUrl(user.email);
+		async.map(users, function(userObj, next) {
+			if (!userObj.email) {
+				db.getObjectField('user:' + userObj.uid, 'email', function(err, email) {
+					userObj.picture = getGravatarUrl(email);
+					next(null, userObj);
+				});
+			} else {
+				userObj.picture = getGravatarUrl(userObj.email);
+				next(null, userObj);
 			}
-
-			return user;
-		});
-
-		callback(null, users);
+		}, callback);
 	} else {
 		// No transformation
 		callback(null, users);

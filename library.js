@@ -46,7 +46,7 @@ plugin.list = function(data, callback) {
 	user.getUserField(data.uid, 'email', function(err, email) {
 		data.pictures.push({
 			type: 'gravatar',
-			url: 'https://www.gravatar.com/avatar/' + sum(email) + '?size=192',
+			url: getGravatarUrl(email),
 			text: 'Gravatar'
 		});
 
@@ -57,7 +57,7 @@ plugin.list = function(data, callback) {
 plugin.get = function(data, callback) {
 	if (data.type === 'gravatar') {
 		user.getUserField(data.uid, 'email', function(err, email) {
-			data.picture = 'https://www.gravatar.com/avatar/' + sum(email) + '?size=192';
+			data.picture = getGravatarUrl(email);
 			callback(null, data);
 		});
 	} else {
@@ -68,7 +68,7 @@ plugin.get = function(data, callback) {
 plugin.updateUser = function(data, callback) {
 	if (plugin.settings.default === 'on') {
 		winston.verbose('[plugin/gravatar] Updating uid ' + data.user.uid + ' to use gravatar');
-		data.user.picture = 'https://www.gravatar.com/avatar/' + sum(data.user.email) + '?size=192';
+		data.user.picture = getGravatarUrl(data.user.email);
 		callback(null, data);
 	} else {
 		// No transformation
@@ -81,7 +81,7 @@ plugin.onForceEnabled = function(users, callback) {
 		users = users.map(function(user) {
 			if (user.hasOwnProperty('picture')) {
 				winston.verbose('[plugin/gravatar] Forcing use of Gravatar (uid: ' + user.uid + ')');
-				user.picture = 'https://www.gravatar.com/avatar/' + sum(user.email || '') + '?size=192';
+				user.picture = getGravatarUrl(user.email);
 			}
 
 			return user;
@@ -93,6 +93,18 @@ plugin.onForceEnabled = function(users, callback) {
 		callback(null, users);
 	}
 }
+
+function getGravatarUrl(email) {
+	var baseUrl = 'https://www.gravatar.com/avatar/' + sum(email || '') + '?size=192';
+
+	if (plugin.settings.customDefault) {
+		baseUrl += '&d=' + encodeURIComponent(plugin.settings.customDefault);
+	} else if (plugin.settings.iconDefault) {
+		baseUrl += '&d=' + plugin.settings.iconDefault;
+	}
+
+	return baseUrl;
+};
 
 function sum(email) {
 	var md5sum = crypto.createHash('md5');

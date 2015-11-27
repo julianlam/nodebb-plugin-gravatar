@@ -1,6 +1,6 @@
 {
   "name": "nodebb-plugin-gravatar",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Allows users to use their Gravatar on your forum",
   "main": "library.js",
   "repository": {

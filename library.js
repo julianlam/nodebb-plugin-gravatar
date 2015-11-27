@@ -45,10 +45,10 @@ plugin.addAdminNavigation = function(header, callback) {
 };
 
 plugin.list = function(data, callback) {
-	user.getUserField(data.uid, 'email', function(err, email) {
+	user.getUserFields(data.uid, ['email', 'username'], function(err, userData) {
 		data.pictures.push({
 			type: 'gravatar',
-			url: getGravatarUrl(email),
+			url: getGravatarUrl(userData),
 			text: 'Gravatar'
 		});
 
@@ -58,8 +58,8 @@ plugin.list = function(data, callback) {
 
 plugin.get = function(data, callback) {
 	if (data.type === 'gravatar') {
-		user.getUserField(data.uid, 'email', function(err, email) {
-			data.picture = getGravatarUrl(email);
+		user.getUserFields(data.uid, ['email', 'username'], function(err, userData) {
+			data.picture = getGravatarUrl(userData);
 			callback(null, data);
 		});
 	} else {
@@ -70,7 +70,7 @@ plugin.get = function(data, callback) {
 plugin.updateUser = function(data, callback) {
 	if (plugin.settings.default === 'on') {
 		winston.verbose('[plugin/gravatar] Updating uid ' + data.user.uid + ' to use gravatar');
-		data.user.picture = getGravatarUrl(data.user.email);
+		data.user.picture = getGravatarUrl(data.user);
 		callback(null, data);
 	} else {
 		// No transformation
@@ -83,11 +83,11 @@ plugin.onForceEnabled = function(users, callback) {
 		async.map(users, function(userObj, next) {
 			if (!userObj.email) {
 				db.getObjectField('user:' + userObj.uid, 'email', function(err, email) {
-					userObj.picture = getGravatarUrl(email);
+					userObj.picture = getGravatarUrl(userObj);
 					next(null, userObj);
 				});
 			} else {
-				userObj.picture = getGravatarUrl(userObj.email);
+				userObj.picture = getGravatarUrl(userObj);
 				next(null, userObj);
 			}
 		}, callback);
@@ -97,11 +97,21 @@ plugin.onForceEnabled = function(users, callback) {
 	}
 }
 
-function getGravatarUrl(email) {
-	var baseUrl = 'https://www.gravatar.com/avatar/' + sum(email || '') + '?size=192';
+function getGravatarUrl(userData) {
+	var email = userData.email,
+		size = parseInt(meta.config.profileImageDimension, 10) || 128,
+		username = userData.username,
+		baseUrl = 'https://www.gravatar.com/avatar/' + sum(email || '') + '?size=192',
+		customDefault = plugin.settings.customDefault;
 
-	if (plugin.settings.customDefault) {
-		baseUrl += '&d=' + encodeURIComponent(plugin.settings.customDefault);
+	if (customDefault && !customDefault.indexOf('http')) {
+		customDefault = customDefault.replace(/%md5/i, sum(email));
+		customDefault = customDefault.replace(/%email/i, email);
+		customDefault = customDefault.replace(/%user/i, username);
+		customDefault = customDefault.replace(/%size/i, size);
+		baseUrl = customDefault;
+	} else if (customDefault) {
+		baseUrl += '&d=' + encodeURIComponent(plugin.settings.customDefault) + '&f=y';
 	} else if (plugin.settings.iconDefault) {
 		baseUrl += '&d=' + plugin.settings.iconDefault;
 	}

@@ -83,6 +83,7 @@ plugin.onForceEnabled = function(users, callback) {
 		async.map(users, function(userObj, next) {
 			if (!userObj.email) {
 				db.getObjectField('user:' + userObj.uid, 'email', function(err, email) {
+					userObj.email = email;
 					userObj.picture = getGravatarUrl(userObj);
 					next(null, userObj);
 				});
@@ -98,10 +99,10 @@ plugin.onForceEnabled = function(users, callback) {
 }
 
 function getGravatarUrl(userData) {
-	var email = userData.email,
+	var email = userData.email || "",
 		size = parseInt(meta.config.profileImageDimension, 10) || 128,
 		username = userData.username,
-		baseUrl = 'https://www.gravatar.com/avatar/' + sum(email || '') + '?size=192',
+		baseUrl = 'https://www.gravatar.com/avatar/' + sum(email) + '?size=192',
 		customDefault = plugin.settings.customDefault;
 
 	if (customDefault && !customDefault.indexOf('http')) {

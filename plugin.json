@@ -11,7 +11,7 @@
 		{ "hook": "filter:users.get", "method": "onForceEnabled" }
 	],
 	"templates": "static/templates",
-	"scripts": [
+	"acpScripts": [
 		"static/lib/admin.js"
 	]
 }

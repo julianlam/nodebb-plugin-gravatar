@@ -79,7 +79,7 @@ plugin.updateUser = function(data, callback) {
 };
 
 plugin.onForceEnabled = function(users, callback) {
-	if (plugin.settings.force === 'on') {
+	if (plugin.hasOwnProperty('settings') && plugin.settings.force === 'on') {
 		async.map(users, function(userObj, next) {
 			if (!userObj.email) {
 				db.getObjectField('user:' + userObj.uid, 'email', function(err, email) {

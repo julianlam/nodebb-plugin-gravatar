@@ -92,6 +92,23 @@ plugin.onForceEnabled = function(users, callback) {
 				next(null, userObj);
 			}
 		}, callback);
+	} else if (plugin.hasOwnProperty('settings') && plugin.settings.default === 'on') {
+		async.map(users, function(userObj, next) {
+			if (userObj.picture === '') {
+				if (!userObj.email) {
+					db.getObjectField('user:' + userObj.uid, 'email', function(err, email) {
+						userObj.email = email;
+						userObj.picture = getGravatarUrl(userObj);
+						next(null, userObj);
+					});
+				} else {
+					userObj.picture = getGravatarUrl(userObj);
+					next(null, userObj);
+				}
+			} else {
+				setImmediate(next, null, userObj);
+			}
+		}, callback);
 	} else {
 		// No transformation
 		callback(null, users);

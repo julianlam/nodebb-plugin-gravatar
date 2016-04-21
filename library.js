@@ -81,6 +81,7 @@ plugin.updateUser = function(data, callback) {
 plugin.onForceEnabled = function(users, callback) {
 	if (plugin.hasOwnProperty('settings') && plugin.settings.force === 'on') {
 		async.map(users, function(userObj, next) {
+			if (!userObj) return;
 			if (!userObj.email) {
 				db.getObjectField('user:' + userObj.uid, 'email', function(err, email) {
 					userObj.email = email;
@@ -94,7 +95,7 @@ plugin.onForceEnabled = function(users, callback) {
 		}, callback);
 	} else if (plugin.hasOwnProperty('settings') && plugin.settings.default === 'on') {
 		async.map(users, function(userObj, next) {
-			if (userObj.picture === '') {
+			if (userObj && userObj.picture === '') {
 				if (!userObj.email) {
 					db.getObjectField('user:' + userObj.uid, 'email', function(err, email) {
 						userObj.email = email;

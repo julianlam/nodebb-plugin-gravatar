@@ -48,7 +48,7 @@ plugin.list = function(data, callback) {
 	user.getUserFields(data.uid, ['email', 'username'], function(err, userData) {
 		data.pictures.push({
 			type: 'gravatar',
-			url: getGravatarUrl(userData),
+			url: getGravatarUrl(userData.email, userData.username),
 			text: 'Gravatar'
 		});
 
@@ -59,7 +59,7 @@ plugin.list = function(data, callback) {
 plugin.get = function(data, callback) {
 	if (data.type === 'gravatar') {
 		user.getUserFields(data.uid, ['email', 'username'], function(err, userData) {
-			data.picture = getGravatarUrl(userData);
+			data.picture = getGravatarUrl(userData.email, userData.username);
 			callback(null, data);
 		});
 	} else {
@@ -70,7 +70,7 @@ plugin.get = function(data, callback) {
 plugin.updateUser = function(data, callback) {
 	if (plugin.settings.default === 'on') {
 		winston.verbose('[plugin/gravatar] Updating uid ' + data.user.uid + ' to use gravatar');
-		data.user.picture = getGravatarUrl(data.user);
+		data.user.picture = getGravatarUrl(data.user.email, data.user.username);
 		callback(null, data);
 	} else {
 		// No transformation
@@ -83,12 +83,11 @@ plugin.onForceEnabled = function(users, callback) {
 		async.map(users, function(userObj, next) {
 			if (!userObj.email) {
 				db.getObjectField('user:' + userObj.uid, 'email', function(err, email) {
-					userObj.email = email;
-					userObj.picture = getGravatarUrl(userObj);
+					userObj.picture = getGravatarUrl(email, userObj.username);
 					next(null, userObj);
 				});
 			} else {
-				userObj.picture = getGravatarUrl(userObj);
+				userObj.picture = getGravatarUrl(userObj.email, userObj.username);
 				next(null, userObj);
 			}
 		}, callback);
@@ -97,12 +96,11 @@ plugin.onForceEnabled = function(users, callback) {
 			if (userObj.picture === '') {
 				if (!userObj.email) {
 					db.getObjectField('user:' + userObj.uid, 'email', function(err, email) {
-						userObj.email = email;
-						userObj.picture = getGravatarUrl(userObj);
+						userObj.picture = getGravatarUrl(email, userObj.username);
 						next(null, userObj);
 					});
 				} else {
-					userObj.picture = getGravatarUrl(userObj);
+					userObj.picture = getGravatarUrl(userObj.email, userObj.username);
 					next(null, userObj);
 				}
 			} else {
@@ -115,10 +113,9 @@ plugin.onForceEnabled = function(users, callback) {
 	}
 }
 
-function getGravatarUrl(userData) {
-	var email = userData.email || "",
+function getGravatarUrl(userEmail, username) {
+	var email = userEmail || "",
 		size = parseInt(meta.config.profileImageDimension, 10) || 128,
-		username = userData.username,
 		baseUrl = 'https://www.gravatar.com/avatar/' + sum(email) + '?size=192',
 		customDefault = plugin.settings.customDefault;
 

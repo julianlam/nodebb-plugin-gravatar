@@ -127,14 +127,15 @@ function getGravatarUrl(userEmail, username) {
 		baseUrl = 'https://www.gravatar.com/avatar/' + sum(email) + '?size=192',
 		customDefault = plugin.settings.customDefault;
 
-	if (customDefault && !customDefault.indexOf('http')) {
-		customDefault = customDefault.replace(/%md5/i, sum(email));
-		customDefault = customDefault.replace(/%email/i, email);
-		customDefault = customDefault.replace(/%user/i, username);
-		customDefault = customDefault.replace(/%size/i, size);
-		baseUrl = customDefault;
-	} else if (customDefault) {
-		baseUrl += '&d=' + encodeURIComponent(plugin.settings.customDefault) + '&f=y';
+	if (customDefault) {
+		// If custom avatar provider is a URL, replace possible variables with values.
+		if (customDefault.indexOf('http') == 0) { //Use explicit check for increased readability.
+			customDefault = customDefault.replace(/%md5/i, sum(email));
+			customDefault = customDefault.replace(/%email/i, email);
+			customDefault = customDefault.replace(/%user/i, username);
+			customDefault = customDefault.replace(/%size/i, size);
+		}
+		baseUrl += '&d=' + encodeURIComponent(customDefault);
 	} else if (plugin.settings.iconDefault) {
 		baseUrl += '&d=' + plugin.settings.iconDefault;
 	}

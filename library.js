@@ -134,6 +134,7 @@ function getGravatarUrl(userEmail, username) {
 			customDefault = customDefault.replace(/%email/i, email);
 			customDefault = customDefault.replace(/%user/i, username);
 			customDefault = customDefault.replace(/%size/i, size);
+			customDefault = customDefault.replace(/%userhash/i, sum(username));
 		}
 		baseUrl += '&d=' + encodeURIComponent(customDefault);
 	} else if (plugin.settings.iconDefault) {

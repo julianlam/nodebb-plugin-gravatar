@@ -146,7 +146,7 @@ function getGravatarUrl(userEmail, username) {
 
 function sum(email) {
 	var md5sum = crypto.createHash('md5');
-	md5sum.update(email);
+	md5sum.update(String(email));
 	md5sum = md5sum.digest('hex');
 	return md5sum;
 }

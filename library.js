@@ -1,10 +1,10 @@
 "use strict";
 
-var user = module.parent.require('./user'),
-	meta = module.parent.require('./meta'),
-	db = module.parent.require('./database'),
-	winston = module.parent.require('winston'),
-	async = module.parent.require('async'),
+var user = require.main.require('./src/user'),
+	meta = require.main.require('./src/meta'),
+	db = require.main.require('./src/database'),
+	winston = require.main.require('winston'),
+	async = require.main.require('async'),
 	crypto = require('crypto'),
 
 	controllers = require('./lib/controllers'),

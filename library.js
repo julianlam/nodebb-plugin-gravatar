@@ -1,8 +1,8 @@
 "use strict";
 
-var user = module.parent.require('./user'),
-	meta = module.parent.require('./meta'),
-	db = module.parent.require('./database'),
+var user = module.parent.require('./src/user'),
+	meta = module.parent.require('./src/meta'),
+	db = module.parent.require('./src/database'),
 	winston = module.parent.require('winston'),
 	async = module.parent.require('async'),
 	crypto = require('crypto'),

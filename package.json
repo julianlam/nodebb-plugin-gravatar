@@ -1,6 +1,6 @@
 {
   "name": "nodebb-plugin-gravatar",
-  "version": "2.2.0",
+  "version": "2.2.2",
   "description": "Allows users to use their Gravatar on your forum",
   "main": "library.js",
   "repository": {
@@ -23,5 +23,8 @@
   "readmeFilename": "README.md",
   "nbbpm": {
     "compatibility": "^1.0.0"
+  },
+  "dependencies": {
+    "async": "^2.6.1"
   }
 }

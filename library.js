@@ -4,7 +4,7 @@ var user = require.main.require('./src/user'),
 	meta = require.main.require('./src/meta'),
 	db = require.main.require('./src/database'),
 	winston = require.main.require('winston'),
-	async = require.main.require('async'),
+	async = require('async'),
 	crypto = require('crypto'),
 
 	controllers = require('./lib/controllers'),

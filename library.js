@@ -101,7 +101,7 @@ plugin.onForceEnabled = function(users, callback) {
 				return next(null, userObj);
 			}
 
-			if (userObj.picture === '') {
+			if (userObj.picture === null || userObj.picture === '') {
 				if (!userObj.email) {
 					db.getObjectField('user:' + userObj.uid, 'email', function(err, email) {
 						userObj.picture = getGravatarUrl(email, userObj.username);

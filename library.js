@@ -11,121 +11,101 @@ const controllers = require('./lib/controllers');
 
 const plugin = {};
 
-plugin.init = function (params, callback) {
+plugin.init = async (params) => {
 	const { router } = params;
 	const hostMiddleware = params.middleware;
 
 	router.get('/admin/plugins/gravatar', hostMiddleware.admin.buildHeader, controllers.renderAdminPage);
 	router.get('/api/admin/plugins/gravatar', controllers.renderAdminPage);
-
-	meta.settings.get('gravatar', (err, settings) => {
-		if (err) {
-			winston.error('[plugin/gravatar] Could not retrieve plugin settings! Using defaults.');
-			plugin.settings = {
-				default: false,
-				force: false,
-			};
-			return;
-		}
-
-		plugin.settings = settings;
-	});
-
-	callback();
 };
 
-plugin.addAdminNavigation = function (header, callback) {
+plugin.addAdminNavigation = async (header) => {
 	header.plugins.push({
 		route: '/plugins/gravatar',
 		icon: 'fa-picture',
 		name: 'Gravatar',
 	});
 
-	callback(null, header);
+	return header;
 };
 
-plugin.list = function (data, callback) {
-	user.getUserFields(data.uid, ['email', 'username'], (_, userData) => {
-		data.pictures.push({
-			type: 'gravatar',
-			url: getGravatarUrl(userData.email, userData.username),
-			text: 'Gravatar',
-		});
-
-		callback(null, data);
+plugin.list = async (data) => {
+	const { email, username } = await user.getUserFields(data.uid, ['email', 'username']);
+	data.pictures.push({
+		type: 'gravatar',
+		url: await getGravatarUrl(email, username),
+		text: 'Gravatar',
 	});
+
+	return data;
 };
 
-plugin.get = function (data, callback) {
+plugin.get = async (data) => {
+	console.log(data);
 	if (data.type === 'gravatar') {
-		user.getUserFields(data.uid, ['email', 'username'], (_, userData) => {
-			data.picture = getGravatarUrl(userData.email, userData.username);
-			callback(null, data);
-		});
-	} else {
-		callback(null, data);
+		const { email, username } = await user.getUserFields(data.uid, ['email', 'username']);
+		data.picture = await getGravatarUrl(email, username);
 	}
+
+	return data;
 };
 
-plugin.updateUser = function (data, callback) {
-	if (plugin.settings.default === 'on') {
+plugin.updateUser = async (data) => {
+	const { default: useDefault } = await meta.settings.get('gravatar');
+	if (useDefault === 'on') {
 		winston.verbose(`[plugin/gravatar] Updating uid ${data.user.uid} to use gravatar`);
-		data.user.picture = getGravatarUrl(data.user.email, data.user.username);
-		callback(null, data);
-	} else {
-		// No transformation
-		callback(null, data);
+		data.user.picture = await getGravatarUrl(data.user.email, data.user.username);
 	}
+
+	return data;
 };
 
-plugin.onForceEnabled = function (users, callback) {
-	if (plugin.hasOwnProperty('settings') && plugin.settings.force === 'on') {
-		async.map(users, (userObj, next) => {
+plugin.onForceEnabled = async (users) => {
+	const { default: useDefault, force } = await meta.settings.get('gravatar');
+
+	if (force === 'on') {
+		users = await Promise.all(users.map(async (userObj) => {
 			if (!userObj) {
-				return next(null, userObj);
+				return userObj;
 			}
 
 			if (!userObj.email) {
-				db.getObjectField(`user:${userObj.uid}`, 'email', (_, email) => {
-					userObj.picture = getGravatarUrl(email, userObj.username);
-					next(null, userObj);
-				});
+				const email = await db.getObjectField(`user:${userObj.uid}`, 'email');
+				userObj.picture = await getGravatarUrl(email, userObj.username);
 			} else {
-				userObj.picture = getGravatarUrl(userObj.email, userObj.username);
-				next(null, userObj);
+				userObj.picture = await getGravatarUrl(userObj.email, userObj.username);
 			}
-		}, callback);
-	} else if (plugin.hasOwnProperty('settings') && plugin.settings.default === 'on') {
-		async.map(users, (userObj, next) => {
+
+			return userObj;
+		}));
+	} else if (plugin.hasOwnProperty('settings') && useDefault === 'on') {
+		users = await Promise.all(users.map(async (userObj) => {
 			if (!userObj) {
-				return next(null, userObj);
+				return userObj;
 			}
 
 			if (userObj.picture === null || userObj.picture === '') {
 				if (!userObj.email) {
-					db.getObjectField(`user:${userObj.uid}`, 'email', (_, email) => {
-						userObj.picture = getGravatarUrl(email, userObj.username);
-						next(null, userObj);
-					});
+					const email = await db.getObjectField(`user:${userObj.uid}`, 'email');
+					userObj.picture = await getGravatarUrl(email, userObj.username);
 				} else {
-					userObj.picture = getGravatarUrl(userObj.email, userObj.username);
-					next(null, userObj);
+					userObj.picture = await getGravatarUrl(userObj.email, userObj.username);
 				}
-			} else {
-				setImmediate(next, null, userObj);
 			}
-		}, callback);
-	} else {
-		// No transformation
-		callback(null, users);
+
+			return userObj;
+		}));
 	}
+
+	return users;
 };
 
-function getGravatarUrl(userEmail, username) {
+async function getGravatarUrl(userEmail, username) {
+	console.log(userEmail, username);
 	const email = userEmail || '';
 	const size = parseInt(meta.config.profileImageDimension, 10) || 128;
 	let baseUrl = `https://www.gravatar.com/avatar/${sum(email)}?size=192`;
-	let { customDefault } = plugin.settings;
+	let { customDefault, iconDefault } = await meta.settings.get('gravatar');
 
 	if (customDefault) {
 		// If custom avatar provider is a URL, replace possible variables with values.
@@ -137,10 +117,11 @@ function getGravatarUrl(userEmail, username) {
 			customDefault = customDefault.replace(/%userhash/i, sum(username));
 		}
 		baseUrl += `&d=${encodeURIComponent(customDefault)}`;
-	} else if (plugin.settings.iconDefault) {
-		baseUrl += `&d=${plugin.settings.iconDefault}`;
+	} else if (iconDefault) {
+		baseUrl += `&d=${iconDefault}`;
 	}
 
+	console.log(baseUrl);
 	return baseUrl;
 }
 

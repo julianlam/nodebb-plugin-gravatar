@@ -41,7 +41,6 @@ plugin.list = async (data) => {
 };
 
 plugin.get = async (data) => {
-	console.log(data);
 	if (data.type === 'gravatar') {
 		const { email, username } = await user.getUserFields(data.uid, ['email', 'username']);
 		data.picture = await getGravatarUrl(email, username);
@@ -101,7 +100,6 @@ plugin.onForceEnabled = async (users) => {
 };
 
 async function getGravatarUrl(userEmail, username) {
-	console.log(userEmail, username);
 	const email = userEmail || '';
 	const size = parseInt(meta.config.profileImageDimension, 10) || 128;
 	let baseUrl = `https://www.gravatar.com/avatar/${sum(email)}?size=192`;
@@ -121,7 +119,6 @@ async function getGravatarUrl(userEmail, username) {
 		baseUrl += `&d=${iconDefault}`;
 	}
 
-	console.log(baseUrl);
 	return baseUrl;
 }
 

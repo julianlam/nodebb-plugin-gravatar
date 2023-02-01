@@ -25,6 +25,11 @@
     "compatibility": "^1.0.0"
   },
   "dependencies": {
-    "async": "^3.2.0"
+    "async": "^3.2.0",
+    "eslint-config-nodebb": "0.2.1"
+  },
+  "devDependencies": {
+    "eslint": "8.x",
+    "eslint-plugin-import": "2.x"
   }
 }

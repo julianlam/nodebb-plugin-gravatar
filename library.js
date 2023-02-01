@@ -1,29 +1,29 @@
-"use strict";
+'use strict';
 
-var user = require.main.require('./src/user'),
-	meta = require.main.require('./src/meta'),
-	db = require.main.require('./src/database'),
-	winston = require.main.require('winston'),
-	async = require('async'),
-	crypto = require('crypto'),
+const user = require.main.require('./src/user');
+const meta = require.main.require('./src/meta');
+const db = require.main.require('./src/database');
+const winston = require.main.require('winston');
+const async = require('async');
+const crypto = require('crypto');
 
-	controllers = require('./lib/controllers'),
-	plugin = {};
+const controllers = require('./lib/controllers');
 
-plugin.init = function(params, callback) {
-	var router = params.router,
-		hostMiddleware = params.middleware,
-		hostControllers = params.controllers;
+const plugin = {};
+
+plugin.init = function (params, callback) {
+	const { router } = params;
+	const hostMiddleware = params.middleware;
 
 	router.get('/admin/plugins/gravatar', hostMiddleware.admin.buildHeader, controllers.renderAdminPage);
 	router.get('/api/admin/plugins/gravatar', controllers.renderAdminPage);
 
-	meta.settings.get('gravatar', function(err, settings) {
+	meta.settings.get('gravatar', (err, settings) => {
 		if (err) {
 			winston.error('[plugin/gravatar] Could not retrieve plugin settings! Using defaults.');
 			plugin.settings = {
 				default: false,
-				force: false
+				force: false,
 			};
 			return;
 		}
@@ -34,31 +34,31 @@ plugin.init = function(params, callback) {
 	callback();
 };
 
-plugin.addAdminNavigation = function(header, callback) {
+plugin.addAdminNavigation = function (header, callback) {
 	header.plugins.push({
 		route: '/plugins/gravatar',
 		icon: 'fa-picture',
-		name: 'Gravatar'
+		name: 'Gravatar',
 	});
 
 	callback(null, header);
 };
 
-plugin.list = function(data, callback) {
-	user.getUserFields(data.uid, ['email', 'username'], function(err, userData) {
+plugin.list = function (data, callback) {
+	user.getUserFields(data.uid, ['email', 'username'], (_, userData) => {
 		data.pictures.push({
 			type: 'gravatar',
 			url: getGravatarUrl(userData.email, userData.username),
-			text: 'Gravatar'
+			text: 'Gravatar',
 		});
 
 		callback(null, data);
 	});
 };
 
-plugin.get = function(data, callback) {
+plugin.get = function (data, callback) {
 	if (data.type === 'gravatar') {
-		user.getUserFields(data.uid, ['email', 'username'], function(err, userData) {
+		user.getUserFields(data.uid, ['email', 'username'], (_, userData) => {
 			data.picture = getGravatarUrl(userData.email, userData.username);
 			callback(null, data);
 		});
@@ -67,9 +67,9 @@ plugin.get = function(data, callback) {
 	}
 };
 
-plugin.updateUser = function(data, callback) {
+plugin.updateUser = function (data, callback) {
 	if (plugin.settings.default === 'on') {
-		winston.verbose('[plugin/gravatar] Updating uid ' + data.user.uid + ' to use gravatar');
+		winston.verbose(`[plugin/gravatar] Updating uid ${data.user.uid} to use gravatar`);
 		data.user.picture = getGravatarUrl(data.user.email, data.user.username);
 		callback(null, data);
 	} else {
@@ -78,15 +78,15 @@ plugin.updateUser = function(data, callback) {
 	}
 };
 
-plugin.onForceEnabled = function(users, callback) {
+plugin.onForceEnabled = function (users, callback) {
 	if (plugin.hasOwnProperty('settings') && plugin.settings.force === 'on') {
-		async.map(users, function(userObj, next) {
+		async.map(users, (userObj, next) => {
 			if (!userObj) {
 				return next(null, userObj);
 			}
 
 			if (!userObj.email) {
-				db.getObjectField('user:' + userObj.uid, 'email', function(err, email) {
+				db.getObjectField(`user:${userObj.uid}`, 'email', (_, email) => {
 					userObj.picture = getGravatarUrl(email, userObj.username);
 					next(null, userObj);
 				});
@@ -96,14 +96,14 @@ plugin.onForceEnabled = function(users, callback) {
 			}
 		}, callback);
 	} else if (plugin.hasOwnProperty('settings') && plugin.settings.default === 'on') {
-		async.map(users, function(userObj, next) {
+		async.map(users, (userObj, next) => {
 			if (!userObj) {
 				return next(null, userObj);
 			}
 
 			if (userObj.picture === null || userObj.picture === '') {
 				if (!userObj.email) {
-					db.getObjectField('user:' + userObj.uid, 'email', function(err, email) {
+					db.getObjectField(`user:${userObj.uid}`, 'email', (_, email) => {
 						userObj.picture = getGravatarUrl(email, userObj.username);
 						next(null, userObj);
 					});
@@ -119,33 +119,33 @@ plugin.onForceEnabled = function(users, callback) {
 		// No transformation
 		callback(null, users);
 	}
-}
+};
 
 function getGravatarUrl(userEmail, username) {
-	var email = userEmail || "",
-		size = parseInt(meta.config.profileImageDimension, 10) || 128,
-		baseUrl = 'https://www.gravatar.com/avatar/' + sum(email) + '?size=192',
-		customDefault = plugin.settings.customDefault;
+	const email = userEmail || '';
+	const size = parseInt(meta.config.profileImageDimension, 10) || 128;
+	let baseUrl = `https://www.gravatar.com/avatar/${sum(email)}?size=192`;
+	let { customDefault } = plugin.settings;
 
 	if (customDefault) {
 		// If custom avatar provider is a URL, replace possible variables with values.
-		if (customDefault.indexOf('http') == 0) { //Use explicit check for increased readability.
+		if (customDefault.indexOf('http') === 0) { // Use explicit check for increased readability.
 			customDefault = customDefault.replace(/%md5/i, sum(email));
 			customDefault = customDefault.replace(/%email/i, email);
 			customDefault = customDefault.replace(/%user/i, username);
 			customDefault = customDefault.replace(/%size/i, size);
 			customDefault = customDefault.replace(/%userhash/i, sum(username));
 		}
-		baseUrl += '&d=' + encodeURIComponent(customDefault);
+		baseUrl += `&d=${encodeURIComponent(customDefault)}`;
 	} else if (plugin.settings.iconDefault) {
-		baseUrl += '&d=' + plugin.settings.iconDefault;
+		baseUrl += `&d=${plugin.settings.iconDefault}`;
 	}
 
 	return baseUrl;
-};
+}
 
 function sum(email) {
-	var md5sum = crypto.createHash('md5');
+	let md5sum = crypto.createHash('md5');
 	md5sum.update(String(email).trim().toLowerCase());
 	md5sum = md5sum.digest('hex');
 	return md5sum;

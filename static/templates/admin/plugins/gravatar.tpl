@@ -1,26 +1,22 @@
 <form role="form" class="gravatar-settings">
 	<div class="row">
-		<div class="col-sm-2 col-xs-12 settings-header">Gravatar</div>
-		<div class="col-sm-10 col-xs-12">
-			<div class="form-group">
-				<label for="default" class="mdl-switch mdl-js-switch mdl-js-ripple-effect">
-					<input type="checkbox" class="mdl-switch__input" id="default" name="default" />
-					<span class="mdl-switch__label">Use Gravatar as default user picture</span>
-				</label>
+		<div class="col-12 col-sm-2 settings-header">Gravatar</div>
+		<div class="col-12 col-sm-10">
+			<div class="form-check form-switch mb-3">
+				<input type="checkbox" class="form-check-input" id="default" name="default">
+				<label for="default" class="form-check-label">Use Gravatar as default user picture</label>
 			</div>
-			<div class="checkbox">
-				<label for="force" class="mdl-switch mdl-js-switch mdl-js-ripple-effect">
-					<input type="checkbox" class="mdl-switch__input" id="force" name="force" />
-					<span class="mdl-switch__label">Force all users to use Gravatar</span>
-				</label>
+			<div class="form-check form-switch mb-3">
+				<input type="checkbox" class="form-check-input" id="force" name="force">
+				<label for="force" class="form-check-label">Force all users to use Gravatar</label>
 			</div>
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-sm-2 col-xs-12 settings-header">Default Image</div>
-		<div class="col-sm-10 col-xs-12">
-			<div class="form-group">
-				<select name="iconDefault" class="form-control">
+		<div class="col-12 col-sm-2 settings-header">Default Image</div>
+		<div class="col-12 col-sm-10">
+			<div class="mb-3">
+				<select name="iconDefault" class="form-select">
 					<option value="">Return the generic Gravatar image</option>
 					<option value="404">Return a broken image if no image is set</option>
 					<option value="mm">Mystery Man: A simple, cartoon-style silhouetted outline of a person</option>
@@ -31,18 +27,15 @@
 					<option value="blank">Blank: A transparent PNG image</option>
 				</select>
 			</div>
-			<div class="form-group">
+			<div class="mb-3">
 				<label for="customDefault">Custom Default Image</label>
 				<input type="text" class="form-control" id="customDefault" name="customDefault" />
-				<p class="help-block">
-					Enter an URL here, and it will be used as the default
-					(overrides the previous option)
+				<p class="form-text">
+					Enter an URL here, and it will be used as the default (overrides the previous option)
 				</p>
 			</div>
 		</div>
 	</div>
 </form>
 
-<button id="save" class="floating-button mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
-	<i class="material-icons">save</i>
-</button>
+<!-- IMPORT admin/partials/save_button.tpl -->
